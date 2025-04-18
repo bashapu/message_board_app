@@ -1,6 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import './screens/splash_screen.dart';
+import './screens/login_screen.dart';
+import './screens/register_screen.dart';
+import './screens/home_page.dart';
+import './screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +18,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Message Board App',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: SplashScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (ctx) => SplashScreen(),
+        '/login': (ctx) => LoginScreen(),
+        '/register': (ctx) => RegisterScreen(),
+        '/home': (ctx) => HomePage(),
+        '/settings': (ctx) => SettingsScreen(),
+      },
     );
   }
 }
