@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:message_board_app/screens/chat_screen.dart';
 import 'profile_screen.dart';
 import 'settings_screen.dart';
 
@@ -40,11 +41,21 @@ class HomePage extends StatelessWidget {
           return ListView.builder(
             itemCount: boards.length,
             itemBuilder: (ctx, index) {
+              final board = boards[index];
               return ListTile(
                 leading: Icon(Icons.chat),
-                title: Text(boards[index]['name']),
+                title: Text(board['name']),
                 onTap: () {
-                  // Navigate to chat window (not implemented yet)
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => ChatScreen(
+                            boardId: board.id,
+                            boardName: board['name'],
+                          ),
+                    ),
+                  );
                 },
               );
             },
