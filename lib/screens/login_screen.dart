@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:message_board_app/screens/register_screen.dart';
 import 'home_page.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -35,6 +36,16 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(controller: _emailController, decoration: InputDecoration(labelText: 'Email')),
             TextField(controller: _passwordController, decoration: InputDecoration(labelText: 'Password'), obscureText: true),
             ElevatedButton(onPressed: _login, child: Text('Login')),
+            SizedBox(height: 20,),
+            ElevatedButton(
+              onPressed:
+                  () => {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => RegisterScreen()),
+                    ),
+                  },
+              child: Text('Register'))
           ],
         ),
       ),

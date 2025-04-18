@@ -15,19 +15,31 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
 
-  // Method to send messages
   Future<void> _sendMessage() async {
     if (_messageController.text.isNotEmpty) {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      await FirebaseFirestore.instance.collection('boards')
-          .doc(widget.boardId)
-          .collection('messages')
-          .add({
-        'message': _messageController.text,
-        'username': currentUser!.email,
-        'datetime': FieldValue.serverTimestamp(),
-      });
-      _messageController.clear();
+      try {
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser != null) {
+          await FirebaseFirestore.instance
+              .collection('boards')
+              .doc(widget.boardId)
+              .collection('messages')
+              .add({
+                'message': _messageController.text,
+                'username': currentUser.email,
+                'datetime': FieldValue.serverTimestamp(),
+              });
+          _messageController.clear();
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('No user logged in')));
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error sending message: $e')));
+      }
     }
   }
 
@@ -39,15 +51,15 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          // Display chat messages using StreamBuilder
           Expanded(
             child: StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('boards')
-                  .doc(widget.boardId)
-                  .collection('messages')
-                  .orderBy('datetime', descending: true)
-                  .snapshots(),
+              stream:
+                  FirebaseFirestore.instance
+                      .collection('boards')
+                      .doc(widget.boardId)
+                      .collection('messages')
+                      .orderBy('datetime', descending: true)
+                      .snapshots(),
               builder: (ctx, AsyncSnapshot<QuerySnapshot> chatSnapshot) {
                 if (chatSnapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -59,14 +71,21 @@ class _ChatScreenState extends State<ChatScreen> {
                 final messages = chatSnapshot.data!.docs;
 
                 return ListView.builder(
-                  reverse: true, // To show new messages at the bottom
+                  reverse: true,
                   itemCount: messages.length,
                   itemBuilder: (ctx, index) {
                     final message = messages[index];
+                    final messageDateTime = message['datetime'];
+
+                    String formattedDateTime =
+                        messageDateTime != null
+                            ? messageDateTime.toDate().toString()
+                            : 'Unknown time';
+
                     return ListTile(
                       title: Text(message['username']),
                       subtitle: Text(message['message']),
-                      trailing: Text(message['datetime'].toDate().toString()),
+                      trailing: Text(formattedDateTime),
                     );
                   },
                 );
@@ -74,7 +93,6 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
 
-          // Text input field for new message
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -86,6 +104,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       labelText: 'Enter message...',
                       border: OutlineInputBorder(),
                     ),
+                    onSubmitted: (value) {
+                      _sendMessage();
+                    },
                   ),
                 ),
                 IconButton(
